@@ -2,6 +2,13 @@
 
 This repository deploys the GW services as a Docker Compose stack. It includes wallet, exchange, analytics, and notification services together with their PostgreSQL, ClickHouse, MongoDB, and NATS dependencies.
 
+## Service repositories
+
+- [gw-exchanger](https://github.com/MacPiggins/gw-exchanger) — Exchange service
+- [gw-wallet](https://github.com/MacPiggins/gw-wallet) — Wallet and account service
+- [gw-analytics](https://github.com/MacPiggins/gw-analytics) — Analytics and reporting service
+- [gw-notification](https://github.com/MacPiggins/gw-notification) — Notifications and messaging service
+
 ## Services
 
 | Service | Purpose | Host address | Dependencies |
