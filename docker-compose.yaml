@@ -1,0 +1,96 @@
+services:
+  gw-wallet:
+    image: macpiggins/gw-wallet:latest
+    restart: unless-stopped
+    volumes:
+      - ./gw-wallet/config.env:/config.env:ro
+    ports:
+      - "8180:8080"
+    depends_on:      
+      - nats      
+      - postgres
+      - gw-exchanger
+  gw-exchanger:
+    image: macpiggins/gw-exchanger:latest
+    restart: unless-stopped
+    volumes:
+      - ./gw-exchanger/config.env:/config.env:ro
+    ports:
+      - "8181:8080"
+    depends_on:                 
+      - postgres
+  gw-analytics:
+    image: macpiggins/gw-analytics:latest
+    restart: unless-stopped
+    volumes:
+      - ./gw-analytics/config.env:/config.env:ro
+    ports:
+      - "8182:8080"
+    depends_on:      
+      - clickhouse
+      - nats
+      - gw-wallet
+  gw-notification:
+    image: macpiggins/gw-notification:latest
+    restart: unless-stopped
+    volumes:
+      - ./gw-notification/config.env:/config.env:ro
+    ports:
+      - "8183:8080"
+    depends_on:      
+      - nats
+      - mongo
+      - gw-wallet
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  nats:
+    image: nats:2.10-alpine
+    restart: unless-stopped
+    command: ["-js"]
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    volumes:
+      - nats-data:/data      
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.8
+    environment:
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: default
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: "1"
+    restart: unless-stopped
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+      - clickhouse-logs:/var/log/clickhouse-server
+      - ./clickhouse/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:      
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+volumes:
+  mongo-data:
+  nats-data:
+  clickhouse-data:
+  clickhouse-logs:
+  postgres-data:
+
+
